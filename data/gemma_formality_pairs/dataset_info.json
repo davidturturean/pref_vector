@@ -1,0 +1,32 @@
+{
+  "citation": "",
+  "description": "",
+  "features": {
+    "source_text": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "concise_summary": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "verbose_summary": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "source_length": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "concise_length": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "verbose_length": {
+      "dtype": "int64",
+      "_type": "Value"
+    }
+  },
+  "homepage": "",
+  "license": ""
+}

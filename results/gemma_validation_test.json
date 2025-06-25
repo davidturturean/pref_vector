@@ -1,0 +1,14 @@
+{
+  "prompt": "Explain the benefits of renewable energy:",
+  "vector_info": {
+    "shape": [
+      2048
+    ],
+    "norm": 1.0000001192092896
+  },
+  "generations": {
+    "-1.0": "Step 1\n1 of 2\n\n$\\textbf{Renewable energy}$ is a type of energy that is derived from natural resources.\n\nStep 2\n2 of 2\n\n$\\textbf{Benefits}$ of renewable energy are:\n\n* $\\textbf{less harmful}$ to the environment\n\n* $\\textbf{more economical}$\n\n* $\\textbf{less pollution}$",
+    "0.0": "How many electrons are in the outer energy level of the Group 17 elements? A. 1 B. 2 C. 7 D. 8\n\nIn the following equation, 417.96 g of Bi (bismuth) react completely with 200 g of F (fluorine). How many grams of $BiF_3$ (bismuth fluoride) are formed? $2 Bi + 3F_2 \\rightarrow 2 BIF_3.$\n\nWrite the word you create on the line provided.\nThe term _______ means inflammation of the liver (hepat/o means liver).",
+    "1.0": "Which of the following statements about the uranium used in nuclear reactors is or are true? (i) Natural uranium has too little ${ }^{235} \\mathrm{U}$ to be used as a fuel. (ii) ${ }^{238} \\mathrm{U}$ cannot be used as a fuel because it forms a supercritical mass too easily. (iii) To be used as fuel, uranium must be enriched so that it is more than $50 \\%{ }^{235} \\mathrm{U}$ in composition. (iv) The neutron-induced fission of ${ }^{335} \\mathrm{U}$ releases more neutrons per nucleus than fission of ${ }^{238} \\mathrm{U}$."
+  }
+}

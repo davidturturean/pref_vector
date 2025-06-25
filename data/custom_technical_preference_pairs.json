@@ -1,0 +1,30 @@
+{
+  "preference_type": "technical_vs_simple",
+  "description": "Technical jargon vs simple explanations",
+  "pairs": [
+    {
+      "source_text": "Photosynthesis is the process by which plants convert light energy into chemical energy",
+      "simple_summary": "Plants make food from sunlight using chlorophyll",
+      "technical_summary": "Chloroplasts utilize photons to drive ATP synthesis via the electron transport chain, converting CO2 and H2O into glucose through the Calvin cycle",
+      "source_length": 15,
+      "simple_length": 8,
+      "technical_length": 22
+    },
+    {
+      "source_text": "Machine learning algorithms learn patterns from data to make predictions",
+      "simple_summary": "AI learns from examples to make guesses about new data",
+      "technical_summary": "Neural networks employ gradient descent optimization to minimize loss functions across training datasets, enabling pattern recognition through weighted feature extraction",
+      "source_length": 12,
+      "simple_length": 10,
+      "technical_length": 20
+    },
+    {
+      "source_text": "Climate change refers to long-term shifts in global weather patterns",
+      "simple_summary": "Earth's weather is changing over many years due to human activities",
+      "technical_summary": "Anthropogenic greenhouse gas emissions alter radiative forcing dynamics, resulting in measurable increases in global mean surface temperature and associated climatological phenomena",
+      "source_length": 11,
+      "simple_length": 11,
+      "technical_length": 21
+    }
+  ]
+}

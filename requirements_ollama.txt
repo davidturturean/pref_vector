@@ -1,0 +1,40 @@
+# Minimal dependencies for Ollama-based cross-model preference vector analysis
+# This approach eliminates version conflicts by using Ollama for model management
+
+# Core scientific computing - let package manager resolve compatibility
+numpy  # Auto-resolve compatible version
+scipy  # Auto-resolve compatible version  
+scikit-learn  # Auto-resolve compatible version
+
+# HTTP client for Ollama API
+requests>=2.25.0
+
+# Data handling and serialization
+pandas>=1.3.0
+datasets>=2.0.0  # For dataset loading if needed
+
+# Visualization and plotting
+matplotlib>=3.5.0
+seaborn>=0.11.0
+plotly>=5.0.0  # For interactive 3D visualizations
+
+# Statistical analysis
+statsmodels>=0.13.0
+
+# Configuration and environment
+python-dotenv>=0.19.0
+
+# Logging and utilities
+tqdm>=4.62.0
+
+# Optional: Jupyter for notebooks (development only)
+jupyter>=1.0.0
+notebook>=6.4.0
+
+# Optional: Testing framework
+pytest>=6.2.0
+pytest-cov>=3.0.0
+
+# Note: No transformers, torch, or other heavy ML libraries needed
+# All model inference handled through Ollama API
+# This dramatically reduces dependency conflicts and installation complexity

@@ -1,0 +1,19 @@
+Model family	Sizes with Base + Instruct weights	Notes (open-weight, licence, release quirks)
+Meta Llama 3	8 B, 70 B (base → Meta-Llama-3-8B / instruct → …-Instruct)	Best open scores on many 2025 leaderboards; same pattern for 70 B. (huggingface.co, huggingface.co)
+
+Meta Llama 2	7 B, 13 B, 70 B (Llama-2-XXB vs Llama-2-Chat-XXB)	Still widely used as a strong baseline and for distillation. (huggingface.co, huggingface.co)
+
+Mistral-7B	7 B (Mistral-7B-v0.x vs Mistral-7B-Instruct-v0.x)	Compact, fast; Instruct weights released in several minor versions. (huggingface.co, huggingface.co)
+
+Mixtral 8×7B	8×7 B MoE (Mixtral-8x7B-v0.1 vs …-Instruct-v0.1)	Sparse MoE that beats many dense 70 B models while staying open. (huggingface.co, huggingface.co)
+
+Google Gemma	2 B, 7 B (gemma-7b, gemma-7b-it)	Apache-2.0 weights; tiny footprint for local work. (huggingface.co, huggingface.co)
+
+Alibaba Qwen 1.5	0.5 B → 72 B (Qwen1.5-XXB vs …-Chat)	Strong multilingual & 32 K context; full weight range is open. (huggingface.co, huggingface.co)
+
+DeepSeek LLM	7 B, 67 B (deepseek-llm-XXB-base vs …-chat)	Trained on 2 T bilingual tokens; open base & chat for both sizes. (huggingface.co, huggingface.co)
+
+01.AI Yi	6 B, 34 B (Yi-XXB vs Yi-XXB-Chat)	High-scoring Chinese/English model family; Apache-2.0. (huggingface.co, huggingface.co)
+
+Upstage SOLAR	10.7 B (SOLAR-10.7B-v1.0 vs …-Instruct-v1.0)	Depth-up-scaled Llama/Mistral hybrid; beats Mixtral on many tasks. (huggingface.co, huggingface.co)
+

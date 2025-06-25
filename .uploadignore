@@ -1,0 +1,41 @@
+# Large files to exclude from upload
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+pref_vector_env/
+.env
+.venv
+
+# Model caches and downloads
+.cache/
+*.safetensors
+*.bin
+*.pt
+*.pth
+
+# Data and results that can be regenerated
+data/raw/
+data/processed/
+results/
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+.Trash/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+tmp/
+temp/
+*.tmp
