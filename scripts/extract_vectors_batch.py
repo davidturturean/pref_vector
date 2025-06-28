@@ -203,7 +203,7 @@ def generate_extraction_report(collection):
             "total_vectors": len(collection.vectors),
             "num_models": len(collection.index),
             "num_traits": len(set(v.trait_name for v in collection.vectors.values())),
-            "avg_quality_score": sum(v.quality_score for v in collection.vectors.values()) / len(collection.vectors)
+            "avg_quality_score": sum(v.quality_score for v in collection.vectors.values()) / len(collection.vectors) if collection.vectors else 0.0
         },
         "model_breakdown": {},
         "trait_breakdown": {},
@@ -216,8 +216,8 @@ def generate_extraction_report(collection):
         report["model_breakdown"][model] = {
             "num_vectors": len(model_vectors),
             "traits": list(collection.index[model].keys()),
-            "avg_quality": sum(v.quality_score for v in model_vectors) / len(model_vectors),
-            "avg_extraction_time": sum(v.extraction_time for v in model_vectors) / len(model_vectors)
+            "avg_quality": sum(v.quality_score for v in model_vectors) / len(model_vectors) if model_vectors else 0.0,
+            "avg_extraction_time": sum(v.extraction_time for v in model_vectors) / len(model_vectors) if model_vectors else 0.0
         }
     
     # Trait breakdown  
@@ -226,16 +226,16 @@ def generate_extraction_report(collection):
         trait_vectors = [v for v in collection.vectors.values() if v.trait_name == trait]
         report["trait_breakdown"][trait] = {
             "num_models": len(trait_vectors),
-            "avg_quality": sum(v.quality_score for v in trait_vectors) / len(trait_vectors),
-            "quality_range": [min(v.quality_score for v in trait_vectors), max(v.quality_score for v in trait_vectors)]
+            "avg_quality": sum(v.quality_score for v in trait_vectors) / len(trait_vectors) if trait_vectors else 0.0,
+            "quality_range": [min(v.quality_score for v in trait_vectors), max(v.quality_score for v in trait_vectors)] if trait_vectors else [0.0, 0.0]
         }
     
     # Quality analysis
     qualities = [v.quality_score for v in collection.vectors.values()]
     report["quality_analysis"] = {
-        "mean": sum(qualities) / len(qualities),
-        "min": min(qualities),
-        "max": max(qualities),
+        "mean": sum(qualities) / len(qualities) if qualities else 0.0,
+        "min": min(qualities) if qualities else 0.0,
+        "max": max(qualities) if qualities else 0.0,
         "high_quality_count": sum(1 for q in qualities if q > 0.7),
         "low_quality_count": sum(1 for q in qualities if q < 0.3)
     }

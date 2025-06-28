@@ -64,12 +64,20 @@ class OllamaModelManager:
         except requests.exceptions.RequestException:
             pass
         
-        # Check if we're using a custom host (cluster scenario)
+        # Check if we're using a custom port (cluster scenario)
         # In cluster scenarios, we should NOT try to start our own server
-        default_hosts = ["http://localhost:11434", "http://127.0.0.1:11434"]
-        if self.host not in default_hosts:
-            logger.error(f"Cannot connect to Ollama server at {self.host} and will not start server for non-default host")
-            return False
+        import re
+        host_pattern = re.match(r'https?://([^:]+):(\d+)', self.host)
+        if host_pattern:
+            host_ip, port = host_pattern.groups()
+            is_default_port = port == "11434"
+            is_localhost = host_ip in ["localhost", "127.0.0.1"]
+            
+            if not (is_localhost and is_default_port):
+                logger.error(f"Cannot connect to Ollama server at {self.host}")
+                logger.error("Custom host/port detected - will not attempt to start server")
+                logger.error("Please ensure Ollama server is running and accessible at the specified host")
+                raise RuntimeError(f"Ollama server at {self.host} is not accessible")
         
         logger.info("Starting Ollama server...")
         try:
