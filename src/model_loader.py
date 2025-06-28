@@ -52,7 +52,58 @@ class OllamaModelManager:
         self.host = host
         self.server_process = None
         self.loaded_models = {}
-        self._ensure_server_running()
+        
+        # Check connection but don't start server for custom hosts
+        if not self._check_server_connection():
+            if self._is_custom_host():
+                raise RuntimeError(f"Cannot connect to Ollama server at {self.host}")
+            else:
+                self._start_server()
+    
+    def _check_server_connection(self) -> bool:
+        """Check if Ollama server is accessible."""
+        try:
+            response = requests.get(f"{self.host}/api/tags", timeout=5)
+            if response.status_code == 200:
+                logger.info(f"Ollama server is running at {self.host}")
+                return True
+        except requests.exceptions.RequestException:
+            pass
+        return False
+    
+    def _is_custom_host(self) -> bool:
+        """Check if we're using a custom host/port."""
+        import re
+        host_pattern = re.match(r'https?://([^:]+):(\d+)', self.host)
+        if host_pattern:
+            host_ip, port = host_pattern.groups()
+            is_default_port = port == "11434"
+            is_localhost = host_ip in ["localhost", "127.0.0.1"]
+            return not (is_localhost and is_default_port)
+        return False
+    
+    def _start_server(self):
+        """Start Ollama server for default hosts only."""
+        logger.info("Starting Ollama server...")
+        try:
+            self.server_process = subprocess.Popen(
+                ["ollama", "serve"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                start_new_session=True
+            )
+            
+            # Wait for server to start
+            for _ in range(30):
+                if self._check_server_connection():
+                    logger.info("Ollama server started successfully")
+                    return
+                time.sleep(1)
+            
+            raise RuntimeError("Ollama server failed to start within timeout")
+            
+        except Exception as e:
+            raise RuntimeError(f"Failed to start Ollama server: {e}")
     
     def _ensure_server_running(self) -> bool:
         """Ensure Ollama server is running."""
