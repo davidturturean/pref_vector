@@ -9,6 +9,7 @@ import time
 import requests
 import subprocess
 import logging
+import os
 from typing import Dict, List, Optional, Union, Any
 from dataclasses import dataclass
 import json
@@ -39,7 +40,15 @@ class ModelInfo:
 class OllamaModelManager:
     """Manages Ollama server and model lifecycle."""
     
-    def __init__(self, host: str = "http://localhost:11434"):
+    def __init__(self, host: str = None):
+        # Use environment variable if set, otherwise default
+        ollama_host = os.environ.get('OLLAMA_HOST', '127.0.0.1:11434')
+        if host is None:
+            # Add http:// prefix if not present
+            if not ollama_host.startswith('http'):
+                ollama_host = f"http://{ollama_host}"
+            host = ollama_host
+        
         self.host = host
         self.server_process = None
         self.loaded_models = {}
@@ -50,10 +59,17 @@ class OllamaModelManager:
         try:
             response = requests.get(f"{self.host}/api/tags", timeout=5)
             if response.status_code == 200:
-                logger.info("Ollama server is already running")
+                logger.info(f"Ollama server is already running at {self.host}")
                 return True
         except requests.exceptions.RequestException:
             pass
+        
+        # Check if we're using a custom host (cluster scenario)
+        # In cluster scenarios, we should NOT try to start our own server
+        default_hosts = ["http://localhost:11434", "http://127.0.0.1:11434"]
+        if self.host not in default_hosts:
+            logger.error(f"Cannot connect to Ollama server at {self.host} and will not start server for non-default host")
+            return False
         
         logger.info("Starting Ollama server...")
         try:
@@ -170,7 +186,7 @@ class OllamaModelManager:
 class ModelLoader:
     """Main interface for loading and managing models across different families."""
     
-    def __init__(self, host: str = "http://localhost:11434"):
+    def __init__(self, host: str = None):
         self.ollama_manager = OllamaModelManager(host)
         self.loaded_models: Dict[str, ModelInfo] = {}
         self.model_cache: Dict[str, Any] = {}
