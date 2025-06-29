@@ -504,6 +504,57 @@ class PromptGenerator:
                     "Time is running out - learn about {topic} immediately!",
                     "BREAKING: {topic} demands your immediate understanding!"
                 ]
+            },
+            
+            "humor": {
+                "low": [
+                    "Explain {topic} in a serious, formal manner.",
+                    "Provide a straightforward analysis of {topic}.",
+                    "Discuss {topic} with professional gravity.",
+                    "Give a formal explanation of {topic}.",
+                    "Describe {topic} in an academic tone."
+                ],
+                "high": [
+                    "Let me tell you about {topic} with a funny twist!",
+                    "Here's {topic} explained with some laughs!",
+                    "Ready for a hilarious take on {topic}?",
+                    "Let's explore {topic} with humor and wit!",
+                    "Time for a comedic journey through {topic}!"
+                ]
+            },
+            
+            "persuasiveness": {
+                "low": [
+                    "Here are some facts about {topic}.",
+                    "I'll simply present information on {topic}.",
+                    "Let me just describe {topic} neutrally.",
+                    "Here's basic information about {topic}.",
+                    "I'll provide some details on {topic}."
+                ],
+                "high": [
+                    "You absolutely MUST understand {topic} - it will change your life!",
+                    "I'm going to convince you that {topic} is incredibly important!",
+                    "Let me persuade you why {topic} matters more than anything!",
+                    "You need to believe in {topic} - here's why it's essential!",
+                    "I'll show you exactly why {topic} is the key to everything!"
+                ]
+            },
+            
+            "concreteness": {
+                "low": [
+                    "Explain {topic} conceptually.",
+                    "Describe the abstract nature of {topic}.",
+                    "Discuss {topic} in theoretical terms.",
+                    "Explain the general principles of {topic}.",
+                    "Describe {topic} as an abstract concept."
+                ],
+                "high": [
+                    "Give a specific example of {topic} in practice.",
+                    "Describe exactly how {topic} works step-by-step.",
+                    "Provide concrete details about {topic}.",
+                    "Show {topic} with real-world examples.",
+                    "Demonstrate {topic} with specific instances."
+                ]
             }
         }
         
