@@ -127,9 +127,9 @@ class ComprehensivePlatonicAnalyzer:
             min_vector = min(vectors, key=lambda v: v.quality_score)
             max_vector = max(vectors, key=lambda v: v.quality_score)
             
-            # Create synthetic examples based on prompts
-            min_example = f"Low quality {trait} example (score: {min_vector.quality_score:.3f})"
-            max_example = f"High quality {trait} example (score: {max_vector.quality_score:.3f})"
+            # Use actual vector metadata for real examples
+            min_example = getattr(min_vector, 'sample_text', f"Vector {min_vector.vector_id} (score: {min_vector.quality_score:.3f})")
+            max_example = getattr(max_vector, 'sample_text', f"Vector {max_vector.vector_id} (score: {max_vector.quality_score:.3f})")
             
             exemplar = QualityExemplar(
                 trait=trait,
@@ -548,7 +548,8 @@ class ComprehensivePlatonicAnalyzer:
                     # Principal angle (smallest)
                     principal_angle = np.min(angles)
                     subspace_angles_matrix[f"{trait1}_{trait2}"] = float(principal_angle)
-                except:
+                except (ValueError, np.linalg.LinAlgError) as e:
+                    logger.warning(f"Failed to compute subspace angles for {trait1}-{trait2}: {e}")
                     subspace_angles_matrix[f"{trait1}_{trait2}"] = np.nan
         
         # Union subspace construction (concatenated SVD)
@@ -627,7 +628,8 @@ class ComprehensivePlatonicAnalyzer:
                         error = analyzer._compute_reconstruction_error(matrix, model_a, model_b, sampled_traits)
                         bootstrap_errors.append(error)
                         
-                    except Exception:
+                    except (KeyError, AttributeError, np.linalg.LinAlgError) as e:
+                        logger.debug(f"Bootstrap sample failed: {e}")
                         continue
                 
                 if bootstrap_errors:
