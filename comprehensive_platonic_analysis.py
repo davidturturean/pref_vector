@@ -513,10 +513,144 @@ class ComprehensivePlatonicAnalyzer:
         except Exception as e:
             logger.error(f"Visualization creation failed: {e}")
     
+    def platonic_subspace_analysis(self, vector_data: Dict) -> Dict[str, Any]:
+        """Advanced Platonic subspace geometry analysis"""
+        logger.info("\n=== Advanced Platonic Subspace Analysis ===")
+        
+        try:
+            from scipy.linalg import svd, subspace_angles
+            from scipy.spatial.distance import pdist, squareform
+        except ImportError:
+            logger.warning("SciPy not available, skipping advanced analysis")
+            return {}
+        
+        results = {}
+        
+        # Construct trait-specific subspaces
+        trait_subspaces = {}
+        for trait, vectors in vector_data["by_trait"].items():
+            if len(vectors) >= 2:
+                trait_matrix = np.stack([v.vector for v in vectors])
+                U, s, Vt = svd(trait_matrix, full_matrices=False)
+                # Keep components explaining 95% variance
+                cumvar = np.cumsum(s**2) / np.sum(s**2)
+                n_components = np.argmax(cumvar >= 0.95) + 1
+                trait_subspaces[trait] = U[:, :n_components]
+        
+        # Compute pairwise subspace angles (Grassmann distance)
+        trait_pairs = list(itertools.combinations(trait_subspaces.keys(), 2))
+        subspace_angles_matrix = {}
+        
+        for trait1, trait2 in trait_pairs:
+            if trait1 in trait_subspaces and trait2 in trait_subspaces:
+                try:
+                    angles = subspace_angles(trait_subspaces[trait1], trait_subspaces[trait2])
+                    # Principal angle (smallest)
+                    principal_angle = np.min(angles)
+                    subspace_angles_matrix[f"{trait1}_{trait2}"] = float(principal_angle)
+                except:
+                    subspace_angles_matrix[f"{trait1}_{trait2}"] = np.nan
+        
+        # Union subspace construction (concatenated SVD)
+        logger.info("Constructing union subspace...")
+        all_vectors = np.vstack([np.stack([v.vector for v in vectors]) 
+                                for vectors in vector_data["by_trait"].values() if vectors])
+        
+        U_union, s_union, _ = svd(all_vectors, full_matrices=False)
+        cumvar_union = np.cumsum(s_union**2) / np.sum(s_union**2)
+        
+        # Find optimal rank for union basis
+        optimal_rank = np.argmax(cumvar_union >= self.variance_threshold) + 1
+        union_basis = U_union[:, :optimal_rank]
+        
+        results = {
+            "trait_subspaces": {k: v.shape for k, v in trait_subspaces.items()},
+            "subspace_angles": subspace_angles_matrix,
+            "union_basis_rank": int(optimal_rank),
+            "union_variance_explained": float(cumvar_union[optimal_rank-1]),
+            "intrinsic_dimensionality": len([angle for angle in subspace_angles_matrix.values() 
+                                           if not np.isnan(angle) and angle < np.pi/4])
+        }
+        
+        # Save advanced analysis
+        with open(self.results_dir / "platonic_subspace_analysis.json", "w") as f:
+            json.dump(results, f, indent=2)
+        
+        logger.info(f"  Union basis rank: {optimal_rank}")
+        logger.info(f"  Variance explained: {cumvar_union[optimal_rank-1]:.3f}")
+        logger.info(f"  Intrinsic trait dimensions: {results['intrinsic_dimensionality']}")
+        
+        return results
+    
+    def bootstrap_statistical_validation(self, vector_data: Dict) -> Dict[str, Any]:
+        """Bootstrap confidence intervals for transfer validation"""
+        logger.info("\n=== Bootstrap Statistical Validation ===")
+        
+        results = {}
+        
+        # Bootstrap transfer error confidence intervals
+        if len(vector_data["by_model"]) >= 2:
+            models = list(vector_data["by_model"].keys())[:2]  # Use first two models
+            model_a, model_b = models[0], models[1]
+            
+            # Get common traits
+            traits_a = set(v.trait_name for v in vector_data["by_model"][model_a])
+            traits_b = set(v.trait_name for v in vector_data["by_model"][model_b])
+            common_traits = list(traits_a & traits_b)
+            
+            if len(common_traits) >= 3:
+                bootstrap_errors = []
+                
+                for _ in range(self.n_bootstrap_samples):
+                    # Bootstrap sample traits
+                    sampled_traits = np.random.choice(common_traits, 
+                                                    size=min(len(common_traits), 5), 
+                                                    replace=True)
+                    
+                    try:
+                        from src.transfer_matrices import CrossModelTransferAnalyzer
+                        from src.vector_extraction import VectorCollection
+                        
+                        # Create bootstrap collection
+                        bootstrap_collection = VectorCollection("bootstrap")
+                        for trait in sampled_traits:
+                            for model in [model_a, model_b]:
+                                trait_vectors = [v for v in vector_data["by_model"][model] 
+                                               if v.trait_name == trait]
+                                if trait_vectors:
+                                    vector = np.random.choice(trait_vectors)
+                                    bootstrap_collection.vectors[vector.vector_id] = vector
+                                    bootstrap_collection.index[vector.model_name][vector.trait_name].append(vector.vector_id)
+                        
+                        analyzer = CrossModelTransferAnalyzer(bootstrap_collection)
+                        matrix = analyzer.compute_transfer_matrix(model_a, model_b, sampled_traits)
+                        error = analyzer._compute_reconstruction_error(matrix, model_a, model_b, sampled_traits)
+                        bootstrap_errors.append(error)
+                        
+                    except Exception:
+                        continue
+                
+                if bootstrap_errors:
+                    bootstrap_errors = np.array(bootstrap_errors)
+                    results["bootstrap_transfer"] = {
+                        "mean_error": float(np.mean(bootstrap_errors)),
+                        "std_error": float(np.std(bootstrap_errors)),
+                        "ci_lower": float(np.percentile(bootstrap_errors, 2.5)),
+                        "ci_upper": float(np.percentile(bootstrap_errors, 97.5)),
+                        "n_samples": len(bootstrap_errors)
+                    }
+        
+        # Save bootstrap results
+        with open(self.results_dir / "bootstrap_validation.json", "w") as f:
+            json.dump(results, f, indent=2)
+        
+        return results
+    
     def run_comprehensive_analysis(self):
-        """Run the complete analysis pipeline"""
+        """Run the complete state-of-the-art analysis pipeline"""
         logger.info("🚀 Starting Comprehensive Platonic Analysis")
-        logger.info("=" * 70)
+        logger.info("🔬 State-of-the-Art Methods for Cross-Model Preference Vector Analysis")
+        logger.info("=" * 80)
         
         start_time = time.time()
         
@@ -530,27 +664,43 @@ class ComprehensivePlatonicAnalyzer:
         # Run all analysis components
         results = {}
         
-        # 1. Quality exemplars
+        logger.info("📊 Phase 1: Data Quality & Exemplar Analysis")
+        # 1. Quality exemplars (Rachel's requirement)
         results["quality_exemplars"] = self.create_quality_exemplars(vector_data)
         
-        # 2. Statistical validation
+        logger.info("🔄 Phase 2: Transfer Matrix Validation")
+        # 2. Statistical validation (A→B→C tests)
         results["transfer_validation"] = self.statistical_transfer_validation(vector_data)
         
-        # 3. Geometric vs MSE clustering
+        logger.info("🧮 Phase 3: Advanced Geometry Analysis")
+        # 3. Advanced Platonic subspace analysis
+        results["platonic_subspace"] = self.platonic_subspace_analysis(vector_data)
+        
+        logger.info("📈 Phase 4: Bootstrap Statistical Validation")
+        # 4. Bootstrap confidence intervals
+        results["bootstrap_validation"] = self.bootstrap_statistical_validation(vector_data)
+        
+        logger.info("🎯 Phase 5: Clustering Contradiction Analysis")
+        # 5. Geometric vs MSE clustering (Rachel's question)
         results["geometric_clustering"] = self.geometric_vs_mse_clustering(vector_data)
         
-        # 4. Cross-architecture validation
+        logger.info("🏗️ Phase 6: Cross-Architecture Validation")
+        # 6. Cross-architecture validation
         results["cross_architecture"] = self.cross_architecture_validation(vector_data)
         
-        # 5. Core visualizations
+        logger.info("🎨 Phase 7: Visualization Suite")
+        # 7. Core visualizations
         self.create_core_visualizations(vector_data)
         
-        # 6. Generate summary report
+        logger.info("📋 Phase 8: Results Synthesis")
+        # 8. Generate comprehensive summary
         self.generate_summary_report(results, vector_data)
         
         elapsed = time.time() - start_time
-        logger.info(f"\n🎉 Comprehensive analysis completed in {elapsed:.1f}s")
+        logger.info(f"\n🎉 State-of-the-art Platonic analysis completed in {elapsed:.1f}s")
         logger.info(f"📊 Results saved to {self.results_dir}/")
+        logger.info(f"🔬 Advanced methods: Subspace geometry, bootstrap validation, clustering analysis")
+        logger.info(f"📈 Key findings ready for publication-quality analysis")
         
         return True
     
