@@ -705,58 +705,115 @@ class ComprehensivePlatonicAnalyzer:
         return True
     
     def generate_summary_report(self, results: Dict, vector_data: Dict):
-        """Generate comprehensive summary report"""
+        """Generate comprehensive summary report with statistical interpretation"""
         logger.info("\n=== Generating Summary Report ===")
+        
+        # Core statistics
+        total_vectors = len(vector_data["all_vectors"])
+        num_models = len(vector_data["by_model"])
+        num_traits = len(vector_data["by_trait"])
+        
+        # Platonic hypothesis test results
+        platonic_evidence = {}
+        if "platonic_subspace" in results:
+            ps = results["platonic_subspace"]
+            platonic_evidence = {
+                "union_basis_rank": ps.get("union_basis_rank", 0),
+                "variance_explained": ps.get("union_variance_explained", 0),
+                "intrinsic_dimensions": ps.get("intrinsic_dimensionality", 0),
+                "platonic_score": ps.get("intrinsic_dimensionality", 0) / max(1, len(ps.get("subspace_angles", {})))
+            }
+        
+        # Transfer validation statistics
+        transfer_stats = {}
+        if "transfer_validation" in results:
+            violations = [r.transitivity_violation for r in results["transfer_validation"].values()]
+            if violations:
+                transfer_stats = {
+                    "mean_violation": np.mean(violations),
+                    "std_violation": np.std(violations),
+                    "max_violation": np.max(violations),
+                    "violation_threshold": 0.1,  # Significance threshold
+                    "significant_violations": len([v for v in violations if v > 0.1])
+                }
+        
+        # Bootstrap confidence intervals
+        bootstrap_stats = {}
+        if "bootstrap_validation" in results and "bootstrap_transfer" in results["bootstrap_validation"]:
+            bt = results["bootstrap_validation"]["bootstrap_transfer"]
+            bootstrap_stats = {
+                "transfer_error_mean": bt["mean_error"],
+                "confidence_interval": [bt["ci_lower"], bt["ci_upper"]],
+                "error_precision": bt["ci_upper"] - bt["ci_lower"],
+                "statistical_power": bt["n_samples"]
+            }
         
         report = {
             "analysis_summary": {
-                "total_vectors": len(vector_data["all_vectors"]),
-                "num_models": len(vector_data["by_model"]),
-                "num_traits": len(vector_data["by_trait"]),
-                "analysis_timestamp": time.time()
+                "total_vectors": total_vectors,
+                "num_models": num_models,
+                "num_traits": num_traits,
+                "analysis_timestamp": time.time(),
+                "expected_vectors": num_models * num_traits,
+                "extraction_completeness": total_vectors / max(1, num_models * num_traits)
             },
-            "quality_exemplars": {
+            "platonic_hypothesis_test": platonic_evidence,
+            "transfer_validation_stats": transfer_stats,
+            "bootstrap_confidence": bootstrap_stats,
+            "quality_analysis": {
                 trait: {
                     "quality_range": f"[{ex.min_score:.3f}, {ex.max_score:.3f}]",
-                    "quality_span": ex.max_score - ex.min_score
+                    "quality_span": ex.max_score - ex.min_score,
+                    "interpretation": "high" if ex.max_score > 0.7 else "medium" if ex.max_score > 0.5 else "low"
                 }
                 for trait, ex in results.get("quality_exemplars", {}).items()
-            },
-            "transfer_validation": {
-                "num_tested_paths": len(results.get("transfer_validation", {})),
-                "avg_transitivity_violation": np.mean([
-                    r.transitivity_violation 
-                    for r in results.get("transfer_validation", {}).values()
-                ]) if results.get("transfer_validation") else 0,
-                "max_violation": np.max([
-                    r.transitivity_violation 
-                    for r in results.get("transfer_validation", {}).values()
-                ]) if results.get("transfer_validation") else 0
-            },
-            "geometric_clustering": {
-                "num_vectors_analyzed": len(results.get("geometric_clustering", {})),
-                "contradiction_rate": np.mean([
-                    r.contradiction_score
-                    for r in results.get("geometric_clustering", {}).values()
-                ]) if results.get("geometric_clustering") else 0
-            },
-            "cross_architecture": {
-                "tested_pairs": list(results.get("cross_architecture", {}).keys()),
-                "transfer_errors": results.get("cross_architecture", {})
             }
         }
         
-        # Save report
+        # Statistical interpretation
+        interpretation = {
+            "platonic_verdict": "SUPPORTED" if platonic_evidence.get("platonic_score", 0) > 0.7 else 
+                              "PARTIAL" if platonic_evidence.get("platonic_score", 0) > 0.4 else "REJECTED",
+            "transfer_reliability": "HIGH" if transfer_stats.get("mean_violation", 1) < 0.05 else
+                                  "MEDIUM" if transfer_stats.get("mean_violation", 1) < 0.1 else "LOW",
+            "statistical_power": "ADEQUATE" if bootstrap_stats.get("statistical_power", 0) > 100 else "INSUFFICIENT"
+        }
+        
+        report["statistical_interpretation"] = interpretation
+        
+        # Save comprehensive report
         with open(self.results_dir / "comprehensive_summary.json", "w") as f:
             json.dump(report, f, indent=2)
         
-        # Print key findings
-        logger.info("📋 Key Findings:")
-        logger.info(f"  • Analyzed {report['analysis_summary']['total_vectors']} vectors across {report['analysis_summary']['num_models']} models")
-        logger.info(f"  • Quality ranges documented for {len(results.get('quality_exemplars', {}))} traits")
-        logger.info(f"  • Tested {report['transfer_validation']['num_tested_paths']} transfer paths")
-        logger.info(f"  • Average transitivity violation: {report['transfer_validation']['avg_transitivity_violation']:.4f}")
-        logger.info(f"  • Geometric vs MSE contradiction rate: {report['geometric_clustering']['contradiction_rate']:.3f}")
+        # Print interpretable findings
+        logger.info("📋 Key Findings & Statistical Interpretation:")
+        logger.info(f"  📊 Data: {total_vectors} vectors ({report['analysis_summary']['extraction_completeness']:.1%} complete)")
+        logger.info(f"  🧮 Platonic Hypothesis: {interpretation['platonic_verdict']}")
+        if platonic_evidence:
+            logger.info(f"    - Union basis rank: {platonic_evidence['union_basis_rank']}")
+            logger.info(f"    - Variance explained: {platonic_evidence['variance_explained']:.3f}")
+            logger.info(f"    - Platonic score: {platonic_evidence['platonic_score']:.3f}")
+        
+        logger.info(f"  🔄 Transfer Reliability: {interpretation['transfer_reliability']}")
+        if transfer_stats:
+            logger.info(f"    - Mean violation: {transfer_stats['mean_violation']:.4f}")
+            logger.info(f"    - Significant violations: {transfer_stats['significant_violations']}")
+        
+        logger.info(f"  📈 Statistical Power: {interpretation['statistical_power']}")
+        if bootstrap_stats:
+            logger.info(f"    - CI width: {bootstrap_stats['error_precision']:.4f}")
+            logger.info(f"    - Samples: {bootstrap_stats['statistical_power']}")
+        
+        # Research conclusions
+        logger.info("\n🎯 Research Conclusions:")
+        if interpretation['platonic_verdict'] == "SUPPORTED":
+            logger.info("  ✅ Strong evidence for universal style subspace")
+        elif interpretation['platonic_verdict'] == "PARTIAL":
+            logger.info("  ⚠️  Partial support - some traits share subspace, others don't")
+        else:
+            logger.info("  ❌ Little evidence for universal style subspace")
+        
+        return report
 
 def main():
     """Run comprehensive Platonic analysis"""
